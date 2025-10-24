@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }} - News Data Extractor{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h1 class="card-title mb-3">{{ article.title }}</h1>
+        
+        <div class="d-flex justify-content-between mb-3">
+            <div>
+                <span class="badge bg-secondary me-2">{{ article.source }}</span>
+                <small class="text-muted">{{ (article.get('published_date') or article.get('scraped_at')) | format_dt }}</small>
+            </div>
+            <div>
+                {% for topic in article.topics %}
+                    <a href="{{ url_for('topic_articles', topic=topic) }}" class="badge bg-primary text-decoration-none me-1">{{ topic|title }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="article-content mb-4">
+            {{ article.content|safe }}
+        </div>
+        
+        <hr>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h5>Named Entities</h5>
+                {% if article.entities %}
+                    <div class="entity-list">
+                        {% for entity_type, entities in article.entities.items() %}
+                            {% if entities %}
+                                <div class="mb-2">
+                                    <strong>{{ entity_type }}:</strong>
+                                    {% for entity in entities %}
+                                        <span class="badge bg-light text-dark me-1">{{ entity }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No entities extracted</p>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-6">
+                <h5>Article Information</h5>
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Source</span>
+                        <a href="{{ url_for('source_articles', source=article.source) }}" class="badge bg-secondary">{{ article.source }}</a>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Published</span>
+                        <span>{{ (article.get('published_date') or article.get('scraped_at')) | format_dt }}</span>
+                    </li>
+                    <li class="list-group-item">
+                        <span>Original URL</span>
+                        <div class="mt-1">
+                            <a href="{{ article.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-external-link-alt me-1"></i>View Original
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between">
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to Home
+    </a>
+</div>
+{% endblock %}

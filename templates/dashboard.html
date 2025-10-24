@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - News Data Extractor{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Dashboard</h1>
+
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title">Pakistan Mentions</h5>
+        <p class="display-6">{{ pakistan_total }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title">Top Persons</h5>
+        <p class="display-6">{{ top_persons|length }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card text-center">
+      <div class="card-body">
+        <h5 class="card-title">Top Locations</h5>
+        <p class="display-6">{{ top_locations|length }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header bg-primary text-white">
+    Pakistan Mentions Over Time
+  </div>
+  <div class="card-body">
+    {% if pakistan_series %}
+      <canvas id="pakistanLineChart" height="120"></canvas>
+    {% else %}
+      <p>No mentions found.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-6">
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">Top Persons</div>
+      <div class="card-body">
+        {% if top_persons %}
+          <canvas id="personsBarChart" height="200"></canvas>
+        {% else %}
+          <p>No person entities found.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">Top Locations</div>
+      <div class="card-body">
+        {% if top_locations %}
+          <canvas id="locationsBarChart" height="200"></canvas>
+        {% else %}
+          <p>No location entities found.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  const pakistanSeries = {{ pakistan_series | tojson }};
+  const topPersons = {{ top_persons | tojson }};
+  const topLocations = {{ top_locations | tojson }};
+
+  function makeColors(n) {
+    const base = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#14b8a6", "#f472b6", "#22c55e", "#06b6d4", "#a855f7"];
+    return Array.from({length: n}, (_, i) => base[i % base.length]);
+  }
+
+  if (pakistanSeries && pakistanSeries.length) {
+    const labels = pakistanSeries.map(p => p.date);
+    const data = pakistanSeries.map(p => p.count);
+    new Chart(document.getElementById('pakistanLineChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Mentions per day',
+          data: data,
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59,130,246,0.2)',
+          tension: 0.2
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {legend: {display: true}},
+        scales: {x: {title: {display: true, text: 'Date'}}, y: {beginAtZero: true}}
+      }
+    });
+  }
+
+  if (topPersons && topPersons.length) {
+    const labels = topPersons.map(p => p.label);
+    const data = topPersons.map(p => p.count);
+    new Chart(document.getElementById('personsBarChart'), {
+      type: 'bar',
+      data: { labels: labels, datasets: [{ label: 'Mentions', data: data, backgroundColor: makeColors(data.length) }] },
+      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+  }
+
+  if (topLocations && topLocations.length) {
+    const labels = topLocations.map(p => p.label);
+    const data = topLocations.map(p => p.count);
+    new Chart(document.getElementById('locationsBarChart'), {
+      type: 'bar',
+      data: { labels: labels, datasets: [{ label: 'Mentions', data: data, backgroundColor: makeColors(data.length) }] },
+      options: { responsive: true, scales: { y: { beginAtZero: true } } }
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environments
+.venv/
+.env
+
+# macOS
+.DS_Store
+
+# Data artifacts
+data/articles/
+data/*.icloud
+
+# Logs
+*.log
+
+# Virtual environment caches
+pip-log.txt
+
+# Jupyter (if any)
+.ipynb_checkpoints/
+
+# Node/Vite (if ever added)
+node_modules/
+dist/

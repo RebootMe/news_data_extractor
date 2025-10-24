@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ current_topic|title }} - News Data Extractor{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Topic: {{ current_topic|title }}</h1>
+
+{% if articles %}
+    <div class="row">
+        {% for article in articles %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ article.title }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            <span class="badge bg-secondary me-1">{{ article.source }}</span>
+                            <small>{{ (article.get('published_date') or article.get('scraped_at')) | format_dt }}</small>
+                        </h6>
+                        <div class="mb-2">
+                            {% for topic in article.topics %}
+                                <a href="{{ url_for('topic_articles', topic=topic) }}" class="badge bg-primary text-decoration-none me-1">{{ topic|title }}</a>
+                            {% endfor %}
+                        </div>
+                        <p class="card-text">{{ ((article.summary or article.content) or '') }}</p>
+                        <a href="{{ url_for('article_detail', article_id=article.article_id) }}" class="btn btn-sm btn-outline-primary">Read More</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if pagination %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('topic_articles', topic=current_topic, page=pagination.prev_num) }}">Previous</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Previous</span>
+                </li>
+            {% endif %}
+
+            {% for page in pagination.iter_pages() %}
+                {% if page %}
+                    <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('topic_articles', topic=current_topic, page=page) }}">{{ page }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('topic_articles', topic=current_topic, page=pagination.next_num) }}">Next</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Next</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+{% else %}
+    <div class="alert alert-info">
+        <p>No articles found for this topic.</p>
+    </div>
+{% endif %}
+{% endblock %}
